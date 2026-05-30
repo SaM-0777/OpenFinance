@@ -1,0 +1,29 @@
+{
+  "name": "@openfinance/monorepo",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --parallel dev:web dev:server",
+    "dev:web": "bun --cwd apps/web dev",
+    "dev:server": "bun --cwd apps/server dev",
+    "build": "bun run build:packages && bun run build:apps",
+    "build:apps": "bun run --parallel build:web build:server",
+    "build:web": "bun --cwd apps/web build",
+    "build:server": "bun --cwd apps/server build",
+    "build:packages": "bun --cwd packages/shared build",
+    "db:push": "bun --cwd packages/shared push",
+    "db:migrate": "bun --cwd packages/shared migrate",
+    "db:studio": "bun --cwd packages/shared studio"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.6.2"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}

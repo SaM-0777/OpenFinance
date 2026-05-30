@@ -1,0 +1,55 @@
+{
+  "name": "@openfinance/shared",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./db": {
+      "import": "./dist/db/index.js",
+      "types": "./dist/db/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./validations": {
+      "import": "./dist/validations/index.js",
+      "types": "./dist/validations/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils/index.js",
+      "types": "./dist/utils/index.d.ts"
+    },
+    "./trpc": {
+      "import": "./dist/trpc/index.js",
+      "types": "./dist/trpc/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "dependencies": {
+    "@trpc/server": "^11.0.0",
+    "drizzle-orm": "^0.30.10",
+    "ioredis": "^5.11.0",
+    "pg": "^8.11.3",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/pg": "^8.11.5",
+    "drizzle-kit": "^0.20.14",
+    "esbuild": "^0.19.11",
+    "esbuild-register": "^3.5.0",
+    "typescript": "^5.6.2"
+  }
+}
