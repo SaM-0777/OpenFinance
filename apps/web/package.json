@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
+    "@openfinance/server": "workspace:*",
     "@openfinance/shared": "workspace:*",
     "@tanstack/react-query": "^5.45.0",
     "@trpc/client": "^11.0.0",

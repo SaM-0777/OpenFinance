@@ -5,7 +5,7 @@ export default function Searchbar({
   searchQuery,
   setSearchQuery,
 }: {
-  searchQuery: string;
+  searchQuery: string | undefined;
   setSearchQuery: (val: string) => void;
 }) {
   return (

@@ -5,12 +5,19 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-export function formatDate(date: Date): string {
+export function formatDate(date: Date | string | null | undefined): string {
+  if (!date) return "";
+
+  const parsedDate = date instanceof Date ? date : new Date(date);
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "";
+  }
+
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
-  }).format(date);
+  }).format(parsedDate);
 }
 
 export function cn(...classes: (string | undefined | null)[]): string {

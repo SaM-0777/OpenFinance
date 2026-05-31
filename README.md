@@ -58,15 +58,26 @@ This is a Bun monorepo using workspaces with the following structure:
 bun install
 ```
 
-2. Create `.env.local` file:
+2. Set up environment variables:
+Copy the `.env.example` to `.env` and update with your database URL and other settings:
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-3. Update `.env.local` with your database URL:
+3. Update `.env` with your configuration:
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/openfinance
+# Frontend
+NEXT_PUBLIC_API_URL=http://localhost:3001
+
+# Backend
+CLIENT_URL=http://localhost:3000
+PORT=3001
+
+# Database
+DATABASE_URL=postgresql://user:password@host:port/database?sslmode=require
 ```
+
+**Note**: The root `.env` file is automatically loaded by Bun and is shared across all apps and packages in the monorepo when running `bun` commands from the root directory.
 
 ### Development
 
@@ -121,32 +132,34 @@ bun build:packages
 │   │   ├── next.config.ts
 │   │   ├── tailwind.config.ts
 │   │   └── package.json
-│   └── server/              # Hono backend
+│   └── server/              # Hono backend with tRPC
 │       ├── src/
-│       │   └── index.ts    # Server entry point
+│       │   ├── app.ts      # Hono app setup
+│       │   ├── index.ts    # Server entry point
+│       │   ├── controllers/
+│       │   └── routes/
 │       └── package.json
 ├── packages/
-│   ├── db/                  # Drizzle ORM setup
-│   │   ├── src/
-│   │   │   ├── index.ts    # Database instance
-│   │   │   ├── schema.ts   # Table definitions
-│   │   │   └── trpc.ts     # tRPC router
-│   │   ├── drizzle.config.ts
-│   │   └── package.json
-│   ├── types/               # Shared TypeScript types
-│   │   ├── src/
-│   │   │   ├── index.ts
-│   │   │   └── types.ts
-│   │   └── package.json
-│   ├── schemas/             # Zod validation schemas
-│   │   ├── src/
-│   │   │   ├── index.ts
-│   │   │   └── schemas.ts
-│   │   └── package.json
-│   └── utils/               # Shared utilities
+│   └── shared/              # Consolidated shared package
 │       ├── src/
-│       │   ├── index.ts
-│       │   └── helpers.ts
+│       │   ├── db/         # Drizzle ORM + PostgreSQL setup
+│       │   │   ├── index.ts
+│       │   │   ├── client.ts
+│       │   │   └── schema/
+│       │   ├── types/      # Shared TypeScript types
+│       │   │   ├── index.ts
+│       │   │   └── types.ts
+│       │   ├── validations/# Zod validation schemas
+│       │   │   ├── index.ts
+│       │   │   └── schemas.ts
+│       │   ├── utils/      # Shared utilities
+│       │   │   ├── index.ts
+│       │   │   └── helpers.ts
+│       │   ├── trpc/       # tRPC router configuration
+│       │   │   └── index.ts
+│       │   └── index.ts    # Main export
+│       ├── drizzle.config.ts
+│       ├── tsconfig.json
 │       └── package.json
 ├── package.json             # Root workspace config
 ├── tsconfig.json            # Shared TypeScript config
@@ -181,10 +194,15 @@ const validated = createUserSchema.parse(user);
 All packages are aliased under `@openfinance/`:
 
 ```typescript
-import { db } from "@openfinance/db";
-import { type User } from "@openfinance/types";
-import { createUserSchema } from "@openfinance/schemas";
-import { formatCurrency } from "@openfinance/utils";
+// Import from main shared package
+import { db } from "@openfinance/shared/db";
+import { type User } from "@openfinance/shared/types";
+import { createUserSchema } from "@openfinance/shared/validations";
+import { formatCurrency } from "@openfinance/shared/utils";
+import { router } from "@openfinance/shared/trpc";
+
+// Or import from sub-exports
+import * from "@openfinance/shared";
 ```
 
 ## 📦 Adding Dependencies
@@ -198,6 +216,7 @@ Add dependencies to a specific workspace:
 ```bash
 bun add -w @openfinance/web package-name
 bun add -w @openfinance/server package-name
+bun add -w @openfinance/shared package-name
 ```
 
 ## 🔗 Inter-package Dependencies
@@ -207,11 +226,24 @@ Packages reference each other using workspace protocol:
 ```json
 {
   "dependencies": {
-    "@openfinance/db": "workspace:*",
-    "@openfinance/types": "workspace:*"
+    "@openfinance/shared": "workspace:*"
   }
 }
 ```
+
+## 🌍 Environment Variables
+
+Environment variables are managed at the monorepo root:
+
+- **Root `.env` file**: Automatically loaded by Bun across all apps and packages
+- **Frontend**: Access public variables with `NEXT_PUBLIC_` prefix
+- **Backend**: Access all variables via `process.env` or `Bun.env`
+- **Shared packages**: Access via standard `process.env`
+
+The `.env` file is shared across:
+- `apps/web` via Next.js
+- `apps/server` via Bun runtime
+- `packages/shared` via Node.js process environment
 
 ## 📚 Learn More
 

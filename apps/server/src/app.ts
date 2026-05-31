@@ -1,22 +1,61 @@
 import { Hono } from "hono";
+import { trpcServer } from "@hono/trpc-server";
 import { cors } from "hono/cors";
-import secRouter from "./routes/sec";
+import { logger } from "hono/logger";
+import { appRouter } from "./trpc/router";
 
-const PORT = Bun.env.PORT || 3001;
+// BullMQ Dashboard
+import { createBullBoard } from "@bull-board/api";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import { HonoAdapter } from "@bull-board/hono";
+import { serveStatic } from "@hono/node-server/serve-static";
+import { basicAuth } from "hono/basic-auth";
+
+import { SecCompanyQueue, SecCompanyHoldingQueue } from "./queue";
+
+const PORT = process.env.PORT;
+const BULLMQ_USER = process.env.BULLMQ_USER;
+const BULLMQ_PASS = process.env.BULLMQ_PASS;
 
 const app = new Hono();
 
+app.use(logger());
 app.use(
   cors({
-    origin: Bun.env.FRONTEND_URL || "http://localhost:3000",
+    origin: process.env.CLIENT_URL,
   }),
 );
 
-app.route("/api/sec", secRouter);
+app.use(
+  "/api/*",
+  trpcServer({
+    router: appRouter,
+  }),
+);
 
 app.get("/health", (c) => {
   return c.json({ status: "ok" }, 200);
 });
+
+const bullMQBasePath = "/admin/bull-mq/dashboard";
+app.use(
+  bullMQBasePath + "/*",
+  basicAuth({
+    username: BULLMQ_USER!,
+    password: BULLMQ_PASS!,
+  }),
+);
+
+const serverAdapter = new HonoAdapter(serveStatic);
+createBullBoard({
+  queues: [
+    new BullMQAdapter(SecCompanyQueue),
+    new BullMQAdapter(SecCompanyHoldingQueue),
+  ],
+  serverAdapter,
+});
+serverAdapter.setBasePath(bullMQBasePath);
+app.route(bullMQBasePath, serverAdapter.registerPlugin());
 
 export default {
   port: PORT,

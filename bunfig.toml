@@ -1,0 +1,21 @@
+# Bun Configuration for OpenFinance Monorepo
+
+# Workspaces configuration
+[install]
+# Enable lockfile for monorepo consistency
+lockfile = "bun.lock"
+
+# Registry configuration
+registry = "https://registry.npmjs.org/"
+
+# Development server options
+[dev]
+# Watch files for changes
+watch = true
+
+# Test runner configuration
+[test]
+# Root directory for tests
+root = "."
+# Run tests with Bun
+showProgress = true
