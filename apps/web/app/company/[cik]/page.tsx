@@ -168,6 +168,7 @@ export default function FundPage() {
                   <tr>
                     <th className="px-6 py-4">Issuer</th>
                     <th className="px-6 py-4">CUSIP</th>
+                    <th className="px-6 py-4">Security Class</th>
                     <th className="px-6 py-4 text-right">Value (USD)</th>
                     <th className="px-6 py-4 text-right">Weight</th>
                     <th className="px-6 py-4 text-right">Shares</th>
@@ -191,6 +192,9 @@ export default function FundPage() {
                         </td>
                         <td className="px-6 py-4 text-zinc-400 font-mono text-xs">
                           {filing.cusip || "-"}
+                        </td>
+                        <td className="px-6 py-4 text-zinc-400 font-mono text-xs">
+                          {filing.securityClass || "-"}
                         </td>
                         <td className="px-6 py-4 text-right text-zinc-200 font-medium">
                           {formatCurrency(filing.value)}

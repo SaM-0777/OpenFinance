@@ -1,26 +1,55 @@
-import { pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core";
 
-export const AssetSchema = pgTable("asset", {
-  id: uuid("id").defaultRandom().primaryKey(),
+export const AssetSchema = pgTable(
+  "asset",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
 
-  ticker: varchar("ticker", {
-    length: 20,
-  }),
-  cusip: varchar("cusip", {
-    length: 20,
-  }).unique(),
+    ticker: varchar("ticker", {
+      length: 20,
+    }).notNull(),
+    cusip: varchar("cusip", {
+      length: 20,
+    })
+      .unique()
+      .notNull(),
 
-  //figi: varchar("figi", {
-  //  length: 32,
-  //}),
+    name: text("name").notNull(),
+    summary: text("summary"),
+    currency: varchar("currency", {
+      length: 10,
+    }),
+    sector: text("sector"),
+    industryGroup: text("industry_group"),
+    industry: text("industry"),
+    exchange: text("exchange"),
+    mic: varchar("mic", {
+      length: 20,
+    }),
+    market: text("market"),
+    country: text("country"),
+    state: text("state"),
+    city: text("city"),
+    zipCode: varchar("zip_code", {
+      length: 20,
+    }),
+    website: text("website"),
+    isin: varchar("isin", {
+      length: 20,
+    }),
 
-  issuer: text("issuer"),
-  assetType: text("asset_type"),
-  exchange: text("exchange"),
-  sector: text("sector"),
-  industry: text("industry"),
-  country: text("country"),
-
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    //uniqueIndex("asset_isin_unique").on(table.isin),
+    uniqueIndex("asset_cusip_unique").on(table.cusip),
+  ],
+);

@@ -24,6 +24,7 @@ export const HoldingSchema = pgTable(
 
     cusip: varchar("cusip"),
     issuer: text("issuer").notNull(),
+    securityClass: text("security_class"),
     value: bigint("value", {
       mode: "number",
     }).notNull(),

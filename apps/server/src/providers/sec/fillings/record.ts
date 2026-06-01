@@ -17,6 +17,7 @@ export async function recordSecCompanyHolding({
         cik,
         issuer: h.issuer,
         cusip: h.cusip,
+        securityClass: h.titleOfClass,
         value: h.value,
         shares: h.shares,
         reportPeriod: new Date(h.reportPeriod),
@@ -40,6 +41,7 @@ export async function recordSecCompanyHolding({
           ],
           set: {
             issuer: sql`excluded.issuer`,
+            securityClass: sql`excluded.security_class`,
             shares: sql`excluded.shares`,
             value: sql`excluded.value`,
             shareType: sql`excluded.share_type`,
@@ -58,4 +60,3 @@ export async function recordSecCompanyHolding({
     );
   }
 }
-

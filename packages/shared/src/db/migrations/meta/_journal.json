@@ -22,6 +22,27 @@
       "when": 1780242339405,
       "tag": "0002_ambitious_miracleman",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780293853653,
+      "tag": "0003_nervous_hydra",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780296326475,
+      "tag": "0004_empty_madame_hydra",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1780298438015,
+      "tag": "0005_exotic_sphinx",
+      "breakpoints": true
     }
   ]
 }

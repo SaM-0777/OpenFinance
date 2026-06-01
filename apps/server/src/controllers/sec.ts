@@ -130,6 +130,7 @@ export async function getSECCompanyFillings(cik: string) {
       .select({
         cusip: HoldingSchema.cusip,
         issuer: HoldingSchema.issuer,
+        securityClass: HoldingSchema.securityClass,
         value: HoldingSchema.value,
         shares: HoldingSchema.shares,
         sharetType: HoldingSchema.shareType,
@@ -144,6 +145,7 @@ export async function getSECCompanyFillings(cik: string) {
         HoldingSchema.filingDate,
         HoldingSchema.cusip,
         HoldingSchema.issuer,
+        HoldingSchema.securityClass,
         HoldingSchema.value,
         HoldingSchema.shares,
         HoldingSchema.shareType,

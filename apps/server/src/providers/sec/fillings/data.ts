@@ -3,6 +3,7 @@ import { XMLParser } from "fast-xml-parser";
 export interface Holding {
   issuer: string;
   cusip: string;
+  titleOfClass: string | null;
   value: number;
   shares: number;
   reportPeriod: string;
@@ -101,6 +102,7 @@ export async function getSECHoldings(filingUrl: string): Promise<Holding[]> {
       .map((holding: any) => ({
         issuer: holding.nameOfIssuer ?? "",
         cusip: String(holding.cusip ?? "").trim(),
+        titleOfClass: holding.titleOfClass?.trim() ?? null,
         value: Number(holding.value ?? 0) * 1000,
         shares: Number(holding?.shrsOrPrnAmt?.sshPrnamt ?? 0),
         reportPeriod,
