@@ -1,5 +1,9 @@
 import { trpc } from "@/lib/trpc";
 
+export function useStats() {
+  return trpc.company.stats.useQuery();
+}
+
 export function useCompanies(search?: string) {
   return trpc.company.list.useQuery({
     search,

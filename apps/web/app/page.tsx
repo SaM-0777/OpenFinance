@@ -4,10 +4,13 @@ import { ArrowRight } from "lucide-react";
 import Searchbar from "@/components/searchbar";
 import FundCard from "@/components/fundcard";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCompanies } from "@/hooks/use-company";
+import { useCompanies, useStats } from "@/hooks/use-company";
+import StatCard from "@/components/statcard";
+import { formatMarketValue } from "@/lib/utils";
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
+  const { data: stats } = useStats();
   const { data } = useCompanies(searchQuery);
 
   return (
@@ -26,6 +29,33 @@ export default function App() {
                 activity.
               </p>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <StatCard
+              stat={{
+                label: "Total AUM Tracked",
+                value: formatMarketValue(stats?.data?.totalAUM ?? 0),
+                change: "",
+                trend: "neutral",
+              }}
+            />
+            <StatCard
+              stat={{
+                label: "Total 13F Filings",
+                value: (stats?.data?.totalCompanies ?? 0).toString(),
+                change: "",
+                trend: "neutral",
+              }}
+            />
+            <StatCard
+              stat={{
+                label: "Top Holdings",
+                value: stats?.data?.topHolding?.issuer ?? "",
+                change: `${stats?.data?.topHolding?.portfolioPercentage.toString()}%`,
+                trend: "up",
+              }}
+            />
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">

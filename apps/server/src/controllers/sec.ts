@@ -178,3 +178,66 @@ export async function getSECCompanyFillings(cik: string) {
     };
   }
 }
+
+export async function getStats() {
+  try {
+    const [companyStats] = await db
+      .select({
+        totalCompanies: sql<number>`
+          count(*)
+        `,
+      })
+      .from(CompanySchema);
+
+    const [aumStats] = await db
+      .select({
+        totalAUM: sql<string>`
+          coalesce(sum(${HoldingSchema.value}), 0)
+        `,
+      })
+      .from(HoldingSchema);
+
+    const [topHolding] = await db
+      .select({
+        cusip: HoldingSchema.cusip,
+        issuer: HoldingSchema.issuer,
+        totalValue: sql<string>`
+          sum(${HoldingSchema.value})
+        `,
+        totalCompaniesHolding: sql<number>`
+          count(distinct ${HoldingSchema.cik})
+        `,
+      })
+      .from(HoldingSchema)
+      .groupBy(HoldingSchema.cusip, HoldingSchema.issuer)
+      .orderBy(sql`sum(${HoldingSchema.value}) desc`)
+      .limit(1);
+
+    const portfolioPercentage =
+      topHolding && aumStats?.totalAUM
+        ? Number(
+            (
+              (parseFloat(topHolding.totalValue) /
+                parseFloat(aumStats.totalAUM)) *
+              100
+            ).toFixed(2),
+          )
+        : 0;
+
+    return {
+      data: {
+        totalCompanies: companyStats?.totalCompanies ?? 0,
+        totalAUM: aumStats?.totalAUM ?? "0",
+        topHolding: topHolding ? { ...topHolding, portfolioPercentage } : null,
+      },
+
+      error: null,
+    };
+  } catch (error) {
+    console.error(`controller.sec.getStats.error ${String(error)}`);
+    return {
+      data: null,
+      error: "Internal server error",
+    };
+  }
+}
