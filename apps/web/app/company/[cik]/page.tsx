@@ -52,7 +52,7 @@ export default function FundPage() {
       </header>
 
       <ScrollArea className="flex-1 overflow-auto">
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
+        <div className="p-8 max-w-8xl mx-auto space-y-8">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-zinc-100">
@@ -82,19 +82,19 @@ export default function FundPage() {
 
             <div className="flex items-center gap-3">
               {data?.data?.company.link && (
-                <a
+                <Link
                   href={data?.data?.company.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-900 border border-zinc-800 rounded-md hover:bg-zinc-800 hover:text-zinc-100 transition-colors shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-950 bg-zinc-100 rounded-md hover:bg-white transition-colors shadow-sm"
                 >
                   SEC Source
                   <ExternalLink className="h-4 w-4" />
-                </a>
+                </Link>
               )}
-              <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-950 bg-zinc-100 rounded-md hover:bg-white transition-colors shadow-sm">
+              {/*<button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-950 bg-zinc-100 rounded-md hover:bg-white transition-colors shadow-sm">
                 Follow Fund
-              </button>
+              </button>*/}
             </div>
           </div>
 
@@ -167,6 +167,7 @@ export default function FundPage() {
                 <thead className="bg-zinc-900/80 text-xs uppercase text-zinc-500 font-medium border-b border-zinc-800">
                   <tr>
                     <th className="px-6 py-4">Issuer</th>
+                    <th className="px-6 py-4">Symbol</th>
                     <th className="px-6 py-4">CUSIP</th>
                     <th className="px-6 py-4">Security Class</th>
                     <th className="px-6 py-4 text-right">Value (USD)</th>
@@ -189,6 +190,14 @@ export default function FundPage() {
                       >
                         <td className="px-6 py-4 font-medium text-zinc-200 group-hover:text-zinc-50 transition-colors">
                           {filing.issuer}
+                        </td>
+                        <td className="px-6 py-4 font-medium text-zinc-200 group-hover:text-zinc-50 transition-colors">
+                          <Link
+                            href={`${filing.website}`}
+                            className="hover:underline"
+                          >
+                            {filing.ticker}
+                          </Link>
                         </td>
                         <td className="px-6 py-4 text-zinc-400 font-mono text-xs">
                           {filing.cusip || "-"}

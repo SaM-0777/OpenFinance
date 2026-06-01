@@ -9,6 +9,7 @@ import {
   desc,
   and,
   HoldingSchema,
+  AssetSchema,
 } from "@openfinance/shared";
 import { Context } from "hono";
 
@@ -60,9 +61,9 @@ export async function getSECCompanies(search?: string) {
       db
         .select({
           cik: HoldingSchema.cik,
-          latestFilingDate: sql<Date>`
-          max(${HoldingSchema.filingDate})
-        `.as("latest_filing_date"),
+          latestFilingDate: sql<Date>`max(${HoldingSchema.filingDate})`.as(
+            "latest_filing_date",
+          ),
         })
         .from(HoldingSchema)
         .groupBy(HoldingSchema.cik),
@@ -129,6 +130,8 @@ export async function getSECCompanyFillings(cik: string) {
     const filings = await db
       .select({
         cusip: HoldingSchema.cusip,
+        ticker: AssetSchema.ticker,
+        website: AssetSchema.website,
         issuer: HoldingSchema.issuer,
         securityClass: HoldingSchema.securityClass,
         value: HoldingSchema.value,
@@ -140,10 +143,13 @@ export async function getSECCompanyFillings(cik: string) {
         reportPeriod: HoldingSchema.reportPeriod,
       })
       .from(HoldingSchema)
+      .leftJoin(AssetSchema, eq(HoldingSchema.cusip, AssetSchema.cusip))
       .where(eq(HoldingSchema.cik, cik))
       .groupBy(
         HoldingSchema.filingDate,
         HoldingSchema.cusip,
+        AssetSchema.ticker,
+        AssetSchema.website,
         HoldingSchema.issuer,
         HoldingSchema.securityClass,
         HoldingSchema.value,
