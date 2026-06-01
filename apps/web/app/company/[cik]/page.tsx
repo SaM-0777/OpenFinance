@@ -13,6 +13,7 @@ import { formatCurrency, formatDate } from "@openfinance/shared/src/utils";
 import { formatMarketValue } from "@/lib/utils";
 import { useParams } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 
 export default function FundPage() {
   const { cik } = useParams();
@@ -144,7 +145,7 @@ export default function FundPage() {
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                  <input
+                  <Input
                     type="text"
                     placeholder="Search issuer or CUSIP..."
                     value={searchQuery}
@@ -180,7 +181,7 @@ export default function FundPage() {
                 <tbody className="divide-y divide-zinc-800/50">
                   {sortedFilings.map((filing, idx) => {
                     const weight =
-                      (totalValue ?? 0 > 0)
+                      totalValue && totalValue > 0
                         ? ((filing.value / totalValue) * 100).toFixed(2)
                         : "0.00";
                     return (
@@ -194,6 +195,7 @@ export default function FundPage() {
                         <td className="px-6 py-4 font-medium text-zinc-200 group-hover:text-zinc-50 transition-colors">
                           <Link
                             href={`${filing.website}`}
+                            target="_blank"
                             className="hover:underline"
                           >
                             {filing.ticker}

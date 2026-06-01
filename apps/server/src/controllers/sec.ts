@@ -105,7 +105,10 @@ export async function getSECCompanies(search?: string) {
         CompanySchema.cik,
         latestFilings.latestFilingDate,
       )
-      .orderBy(desc(latestFilings.latestFilingDate));
+      .orderBy(
+        desc(sql`sum(${HoldingSchema.value})`),
+        desc(latestFilings.latestFilingDate),
+      );
 
     return { data: companies, error: null };
   } catch (error) {

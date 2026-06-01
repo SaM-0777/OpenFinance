@@ -47,15 +47,33 @@ export const HoldingSchema = pgTable(
     }),
 
     investmentDiscretion: text("investment_discretion"),
+    otherManager: text("other_manager"),
+
+    votingAuthoritySole: bigint("voting_authority_sole", {
+      mode: "number",
+    }),
+    votingAuthorityShared: bigint("voting_authority_shared", {
+      mode: "number",
+    }),
+    votingAuthorityNone: bigint("voting_authority_none", {
+      mode: "number",
+    }),
+
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex("holding_cik_filing_cusip_unique").on(
+    uniqueIndex("holding_unique").on(
       table.cik,
       table.filingDate,
+      table.reportPeriod,
       table.cusip,
       table.investmentDiscretion,
+      table.optionType,
+      table.otherManager,
+      table.votingAuthoritySole,
+      table.votingAuthorityShared,
+      table.votingAuthorityNone,
     ),
   ],
 );

@@ -1,0 +1,2 @@
+DROP INDEX "holding_cik_filing_cusip_unique";--> statement-breakpoint
+CREATE UNIQUE INDEX "holding_cik_filing_cusip_unique" ON "holding" USING btree ("cik","filing_date","cusip","investment_discretion","option_type");

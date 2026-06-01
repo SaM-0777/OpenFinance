@@ -9,7 +9,7 @@ export async function recordSecCompanyHolding({
   link: string;
 }) {
   try {
-    const holdings = await getSECHoldings(link);
+    const holdings = await getSECHoldings(cik);
     const dbRecord: InferInsertModel<typeof HoldingSchema>[] = [];
 
     for (const h of holdings) {
@@ -23,7 +23,7 @@ export async function recordSecCompanyHolding({
         reportPeriod: new Date(h.reportPeriod),
         filingDate: new Date(h.filingDate),
         shareType: h.shareType,
-        optionType: h.optionType,
+        optionType: h.optionType ?? "",
         investmentDiscretion: h.investmentDiscretion,
       });
     }
@@ -38,15 +38,25 @@ export async function recordSecCompanyHolding({
             HoldingSchema.cusip,
             HoldingSchema.filingDate,
             HoldingSchema.investmentDiscretion,
+            HoldingSchema.optionType,
+            HoldingSchema.otherManager,
+            HoldingSchema.votingAuthoritySole,
+            HoldingSchema.votingAuthoritySole,
+            HoldingSchema.votingAuthorityShared,
+            HoldingSchema.votingAuthorityNone,
           ],
           set: {
             issuer: sql`excluded.issuer`,
             securityClass: sql`excluded.security_class`,
-            shares: sql`excluded.shares`,
             value: sql`excluded.value`,
+            shares: sql`excluded.shares`,
             shareType: sql`excluded.share_type`,
             optionType: sql`excluded.option_type`,
             investmentDiscretion: sql`excluded.investment_discretion`,
+            otherManager: sql`excluded.other_manager`,
+            votingAuthoritySole: sql`excluded.voting_authority_sole`,
+            votingAuthorityShared: sql`excluded.voting_authority_shared`,
+            votingAuthorityNone: sql`excluded.voting_authority_none`,
           },
         });
     }

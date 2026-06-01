@@ -11,96 +11,92 @@ export interface Holding {
   shareType: string | null;
   optionType: string | null;
   investmentDiscretion: string | null;
+  otherManager: string | null;
+  votingAuthoritySole: number;
+  votingAuthorityShared: number;
+  votingAuthorityNone: number;
 }
 
 const headers = {
   "User-Agent":
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
   "Accept-Encoding": "gzip, deflate, br",
-  Accept: "application/xml,text/xml,text/html",
+  Accept: "application/json,text/plain,application/xml,text/xml",
   cookie: process.env.SEC_COOKIE!,
 };
 
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: "@_",
-
   parseTagValue: false,
   parseAttributeValue: false,
-
   trimValues: true,
 });
 
-export async function getSECHoldings(filingUrl: string): Promise<Holding[]> {
+export async function getSECHoldings(cik: string): Promise<Holding[]> {
   try {
-    const baseDir = filingUrl.replace(/\/[^/]+-index\.htm$/, "");
+    const paddedCik = cik.padStart(10, "0");
 
-    const filingPageReq = await fetch(filingUrl, {
-      headers,
-    });
+    const submissionUrl = `https://data.sec.gov/submissions/CIK${paddedCik}.json`;
+    const submissionReq = await fetch(submissionUrl, { headers });
 
-    if (!filingPageReq.ok) {
-      throw new Error(`Failed to fetch filing page (${filingPageReq.status})`);
-    }
-
-    const filingHtml = await filingPageReq.text();
-
-    const filingDate =
-      filingHtml
-        .match(
-          /Filing Date[\s\S]*?<div[^>]*class="info"[^>]*>(.*?)<\/div>/i,
-        )?.[1]
-        ?.trim() ?? null;
-
-    const reportPeriod =
-      filingHtml
-        .match(
-          /Period of Report[\s\S]*?<div[^>]*class="info"[^>]*>(.*?)<\/div>/i,
-        )?.[1]
-        ?.trim() ?? null;
-
-    const indexReq = await fetch(`${baseDir}/index.json`, {
-      headers,
-    });
-
-    if (!indexReq.ok) {
-      throw new Error(`Failed to fetch index.json (${indexReq.status})`);
-    }
-
-    const indexJson = await indexReq.json();
-
-    const files = indexJson?.directory?.item ?? [];
-    const infoTableFile = files.find((file: any) => {
-      const name = file.name?.toLowerCase() ?? "";
-
-      return (
-        name.endsWith(".xml") &&
-        (name.includes("infotable") || name.includes("informationtable"))
+    if (!submissionReq.ok) {
+      throw new Error(
+        `Failed to fetch SEC submission (${submissionReq.status})`,
       );
-    });
-
-    if (!infoTableFile) {
-      throw new Error("Information Table XML not found");
     }
 
-    const infoTableUrl = `${baseDir}/${infoTableFile.name}`;
-    const xmlReq = await fetch(infoTableUrl, {
+    const submission = await submissionReq.json();
+    const recent = submission?.filings?.recent;
+
+    if (!recent) {
+      throw new Error(`No recent filings found for CIK ${cik}`);
+    }
+
+    const filingIndex = recent.form.findIndex(
+      (form: string) => form === "13F-HR",
+    );
+
+    if (filingIndex === -1) {
+      throw new Error(`No 13F-HR filing found for CIK ${cik}`);
+    }
+
+    const accessionNumber = recent.accessionNumber[filingIndex];
+    const filingDate = recent.filingDate[filingIndex];
+    const reportPeriod = recent.reportDate[filingIndex];
+    const cikWithoutLeadingZeros = String(Number(cik));
+    const accessionWithoutDashes = accessionNumber.replaceAll("-", "");
+
+    const txtUrl = `https://www.sec.gov/Archives/edgar/data/${cikWithoutLeadingZeros}/${accessionWithoutDashes}/${accessionNumber}.txt`;
+    const txtReq = await fetch(txtUrl, {
       headers,
     });
 
-    if (!xmlReq.ok) {
-      throw new Error(`Failed to fetch holdings XML (${xmlReq.status})`);
+    if (!txtReq.ok) {
+      throw new Error(`Failed to fetch SEC TXT (${txtReq.status})`);
     }
 
-    const xml = await xmlReq.text();
-    const parsed = parser.parse(xml);
+    const txt = await txtReq.text();
+
+    const infoTableMatch = txt.match(
+      /<DOCUMENT>\s*<TYPE>INFORMATION TABLE[\s\S]*?<XML>([\s\S]*?)<\/XML>[\s\S]*?<\/DOCUMENT>/i,
+    );
+
+    if (!infoTableMatch?.[1]) {
+      throw new Error("INFORMATION TABLE document not found");
+    }
+
+    const informationTableXml = infoTableMatch[1].trim();
+
+    const parsed = parser.parse(informationTableXml);
 
     const infoTables = parsed?.informationTable?.infoTable ?? [];
+
     const rows = Array.isArray(infoTables) ? infoTables : [infoTables];
 
-    return rows
+    const result = rows
       .map((holding: any) => ({
-        issuer: holding.nameOfIssuer ?? "",
+        issuer: holding.nameOfIssuer?.trim() ?? "",
         cusip: String(holding.cusip ?? "").trim(),
         titleOfClass: holding.titleOfClass?.trim() ?? null,
         value: Number(holding.value ?? 0) * 1000,
@@ -110,10 +106,22 @@ export async function getSECHoldings(filingUrl: string): Promise<Holding[]> {
         shareType: holding?.shrsOrPrnAmt?.sshPrnamtType ?? null,
         optionType: holding.putCall ?? null,
         investmentDiscretion: holding.investmentDiscretion ?? null,
+        otherManager: holding.otherManager?.toString()?.trim() ?? null,
+        votingAuthoritySole: Number(
+          holding?.votingAuthority?.Sole ?? holding?.votingAuthority?.sole ?? 0,
+        ),
+        votingAuthorityShared: Number(
+          holding?.votingAuthority?.Shared ??
+            holding?.votingAuthority?.shared ??
+            0,
+        ),
+        votingAuthorityNone: Number(
+          holding?.votingAuthority?.None ?? holding?.votingAuthority?.none ?? 0,
+        ),
       }))
-      .filter(
-        (h) => Boolean(h.filingDate) && Boolean(h.reportPeriod),
-      ) as Holding[];
+      .filter((holding) => holding.cusip.length > 0) as Holding[];
+
+    return result;
   } catch (error) {
     throw new Error(`providers.sec.getHoldings.error ${String(error)}`);
   }
