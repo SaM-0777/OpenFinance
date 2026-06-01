@@ -1,12 +1,6 @@
 "use client";
 import React from "react";
-import {
-  Activity,
-  Bell,
-  Building,
-  LayoutDashboard,
-  Settings,
-} from "lucide-react";
+import { Bell, LayoutDashboard, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 

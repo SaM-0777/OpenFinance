@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TRPCProvider } from "@/providers/query-provider";
+import Sidebar from "@/components/sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +31,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <TRPCProvider>
-          {children}
+          <div className="flex h-screen w-full bg-zinc-950 text-zinc-50 font-sans selection:bg-zinc-800 selection:text-zinc-100 overflow-hidden">
+            <Sidebar />
+            {children}
+          </div>
         </TRPCProvider>
       </body>
     </html>

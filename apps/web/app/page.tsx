@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
-import Sidebar from "@/components/sidebar";
 import Searchbar from "@/components/searchbar";
 import FundCard from "@/components/fundcard";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,52 +11,49 @@ export default function App() {
   const { data } = useCompanies(searchQuery);
 
   return (
-    <div className="flex h-screen w-full bg-zinc-950 text-zinc-50 font-sans selection:bg-zinc-800 selection:text-zinc-100 overflow-hidden">
-      <Sidebar />
+    <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      <Searchbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <Searchbar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <ScrollArea className="flex-1 overflow-auto">
+        <div className="p-6 space-y-8">
+          <div className="flex items-end justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
+                Dashboard
+              </h1>
+              <p className="text-sm text-zinc-400 mt-1">
+                Overview of latest institutional 13F filings and market
+                activity.
+              </p>
+            </div>
+          </div>
 
-        <ScrollArea className="flex-1 overflow-auto">
-          <div className="p-6 space-y-8">
-            <div className="flex items-end justify-between">
-              <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">
-                  Dashboard
-                </h1>
-                <p className="text-sm text-zinc-400 mt-1">
-                  Overview of latest institutional 13F filings and market
-                  activity.
-                </p>
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <div className="xl:col-span-2 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-zinc-100">
+                  Latest 13F Filings
+                </h2>
+                <button className="text-xs font-medium text-zinc-400 hover:text-zinc-100 flex items-center transition-colors">
+                  View all <ArrowRight className="ml-1 h-3 w-3" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {data?.data ? (
+                  data.data.map((fund) => (
+                    <FundCard key={fund.id} fund={fund} />
+                  ))
+                ) : (
+                  <div className="col-span-2 p-8 text-center border border-zinc-800 rounded-lg border-dashed text-zinc-500 text-sm">
+                    {`No filings found matching`}
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-              <div className="xl:col-span-2 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-zinc-100">
-                    Latest 13F Filings
-                  </h2>
-                  <button className="text-xs font-medium text-zinc-400 hover:text-zinc-100 flex items-center transition-colors">
-                    View all <ArrowRight className="ml-1 h-3 w-3" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {data?.data ? (
-                    data.data.map((fund) => (
-                      <FundCard key={fund.id} fund={fund} />
-                    ))
-                  ) : (
-                    <div className="col-span-2 p-8 text-center border border-zinc-800 rounded-lg border-dashed text-zinc-500 text-sm">
-                      {`No filings found matching`}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {/*<div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-5">
+            <div className="space-y-4">
+              {/*<div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-semibold text-zinc-100">
                       AUM Trend (Trillions)
@@ -127,7 +123,7 @@ export default function App() {
                   </div>
                 </div>*/}
 
-                {/*<div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-5">
+              {/*<div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-semibold text-zinc-100">
                       Live Activity
@@ -170,11 +166,10 @@ export default function App() {
                     View Alert Feed
                   </button>
                 </div>*/}
-              </div>
             </div>
           </div>
-        </ScrollArea>
-      </main>
-    </div>
+        </div>
+      </ScrollArea>
+    </main>
   );
 }
