@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCompanies, useStats } from "@/hooks/use-company";
 import StatCard from "@/components/statcard";
 import { formatMarketValue } from "@/lib/utils";
+import TopHoldingsChart from "@/components/top-holdings-chart";
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState<string | undefined>();
@@ -83,6 +84,7 @@ export default function App() {
             </div>
 
             <div className="space-y-4">
+              <TopHoldingsChart />
               {/*<div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-semibold text-zinc-100">

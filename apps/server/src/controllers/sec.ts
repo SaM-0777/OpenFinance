@@ -252,3 +252,59 @@ export async function getStats() {
     };
   }
 }
+
+export async function getTopHoldings(limit: number = 10) {
+  try {
+    const latestFilings = db.$with("latest_filings").as(
+      db
+        .select({
+          cik: HoldingSchema.cik,
+          latestFilingDate: sql<Date>`
+            max(${HoldingSchema.filingDate})
+          `.as("latest_filing_date"),
+        })
+        .from(HoldingSchema)
+        .groupBy(HoldingSchema.cik),
+    );
+
+    const holdings = await db
+      .with(latestFilings)
+      .select({
+        issuer: HoldingSchema.issuer,
+        ticker: AssetSchema.ticker,
+        cusip: HoldingSchema.cusip,
+        totalValue: sql<number>`
+          sum(${HoldingSchema.value})
+        `.as("total_value"),
+
+        holdersCount: sql<number>`
+          count(distinct ${HoldingSchema.cik})
+        `.as("holders_count"),
+      })
+      .from(HoldingSchema)
+      .innerJoin(
+        latestFilings,
+        sql`
+          ${HoldingSchema.cik} = ${latestFilings.cik}
+          and
+          ${HoldingSchema.filingDate} = ${latestFilings.latestFilingDate}
+        `,
+      )
+      .leftJoin(AssetSchema, eq(HoldingSchema.cusip, AssetSchema.cusip))
+      .groupBy(HoldingSchema.cusip, HoldingSchema.issuer, AssetSchema.ticker)
+      .orderBy(desc(sql`sum(${HoldingSchema.value})`))
+      .limit(limit);
+
+    return {
+      data: holdings,
+      error: null,
+    };
+  } catch (error) {
+    console.error(`controller.sec.getTopHoldings.error ${String(error)}`);
+
+    return {
+      data: null,
+      error: "Internal server error",
+    };
+  }
+}

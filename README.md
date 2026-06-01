@@ -1,259 +1,208 @@
-# OpenFinance Monorepo
+# OpenFinance
 
-A complete, type-safe finance management platform built with Bun, featuring strict end-to-end type safety across frontend and backend.
+OpenFinance is a financial dashboard for tracking institutional investment activity through SEC 13F filings. It helps surface where hedge funds and other institutions are focusing in the market by organizing their latest holdings, portfolio changes, and filing activity in one place.
 
-## 📦 Architecture
+The project is designed to make institutional market signals easier to explore:
 
-This is a Bun monorepo using workspaces with the following structure:
+- Track SEC 13F filings and institutional holdings.
+- Analyze portfolio allocation and net returns across holdings.
+- Understand sentiment around individual funds and the broader tracked market.
+- Identify sectors and stocks that are trending in the latest filings.
+- Explore where institutions are increasing their market focus.
 
-### Apps
-- **web**: Next.js 15 frontend application with React 19
-- **server**: Hono backend API server with tRPC
+## Demo
 
-### Packages
-- **db**: PostgreSQL database setup with Drizzle ORM, migrations, and shared schemas
-- **types**: Shared TypeScript types with proper inference from database schemas
-- **schemas**: Shared Zod validation schemas for end-to-end type safety
-- **utils**: Shared utility functions
+### Market Dashboard
 
-## 🛠️ Tech Stack
+The main dashboard summarizes tracked assets under management, recent 13F filings, top holdings, and the latest institutional activity.
+
+![OpenFinance market dashboard](./demo/dashboard.png)
+
+### Fund 13F Filing Dashboard
+
+The fund dashboard provides a closer look at a specific institution, including portfolio value, filing dates, top holdings, position weights, shares, and security details.
+
+![OpenFinance fund 13F filing dashboard](./demo/13F_filling.png)
+
+### Queue Dashboard
+
+SEC ingestion jobs are processed with BullMQ. The Bull Board dashboard makes it possible to inspect queue activity, completed jobs, failures, and delayed work.
+
+![OpenFinance BullMQ queue dashboard](./demo/queues.png)
+
+## Current Features
+
+- Real-time SEC filing ingestion for institutional 13F data.
+- Holdings and portfolio analysis for tracked hedge funds.
+- Fund-level dashboards with searchable holdings information.
+- Sentiment analysis for each tracked hedge fund and across the tracked market.
+- Market trend insights for sectors and stocks appearing in the latest filings.
+- Redis-backed BullMQ queues for SEC data processing.
+- Bull Board queue administration dashboard.
+
+## Tech Stack
 
 ### Frontend
-- Next.js 15 (App Router)
-- React 19
-- TypeScript
-- TailwindCSS with Shadcn UI
-- TanStack React Query
-- tRPC Client
-- Recharts
-- Lucide Icons
+
+- [Next.js 16](https://nextjs.org/) with the App Router
+- [React 19](https://react.dev/)
+- [TanStack React Query](https://tanstack.com/query/latest)
+- [tRPC](https://trpc.io/) client integration
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Recharts](https://recharts.org/)
 
 ### Backend
-- Hono
-- tRPC
-- TypeScript
-- Bun Runtime
-- Drizzle ORM
 
-### Database
-- PostgreSQL
-- Drizzle ORM with migration support
-- pg driver
+- [Bun](https://bun.sh/) runtime and workspace tooling
+- [Hono](https://hono.dev/) API server
+- [tRPC](https://trpc.io/) for end-to-end type-safe APIs
+- [BullMQ](https://docs.bullmq.io/) for SEC ingestion jobs
+- [Bull Board](https://github.com/felixmosh/bull-board) for queue administration
 
-### Monorepo
-- Bun Workspaces
-- Shared packages for types, schemas, and database
-- Workspace aliases: `@openfinance/*`
+### Data
 
-## 🚀 Getting Started
+- [PostgreSQL](https://www.postgresql.org/)
+- [Drizzle ORM](https://orm.drizzle.team/)
+- [Redis](https://redis.io/)
+
+## Future Work
+
+### AutoInvestment
+
+AutoInvestment will use an AI agent to analyze institutional holdings, market activity, and portfolio trends. It will recommend stocks and sectors based on where tracked institutions are concentrating their investments.
+
+### Brokerage Integration
+
+A later phase will allow users to connect their brokerage accounts and create their own investment strategies inspired by hedge fund portfolios and institutional market signals.
+
+## Project Structure
+
+```text
+.
+├── apps/
+│   ├── web/                       # Next.js dashboard
+│   │   ├── app/                   # App Router pages
+│   │   ├── components/            # Dashboard and shadcn/ui components
+│   │   ├── hooks/                 # React Query and tRPC hooks
+│   │   ├── lib/                   # Client utilities
+│   │   └── providers/             # React providers
+│   └── server/                    # Bun + Hono API server
+│       ├── scripts/               # Queue and data seeding scripts
+│       └── src/
+│           ├── controllers/       # SEC data controllers
+│           ├── providers/sec/     # SEC filing fetch and persistence logic
+│           ├── queue/             # BullMQ queues and workers
+│           └── trpc/              # tRPC router and procedures
+├── packages/
+│   └── shared/                    # Shared data layer and utilities
+│       └── src/
+│           ├── db/                # Drizzle schema and PostgreSQL client
+│           ├── redis/             # Redis client
+│           ├── types/             # Shared TypeScript types
+│           ├── utils/             # Shared helpers
+│           └── validations/       # Shared validation schemas
+├── demo/                          # README screenshots
+├── package.json                   # Bun workspace scripts
+└── tsconfig.json                  # Shared TypeScript configuration
+```
+
+## Getting Started
 
 ### Prerequisites
-- Bun (latest version)
-- PostgreSQL (running locally or remote connection)
+
+- [Bun](https://bun.sh/)
+- PostgreSQL
+- Redis
 
 ### Installation
 
-1. Install dependencies:
+Install dependencies from the repository root:
+
 ```bash
 bun install
 ```
 
-2. Set up environment variables:
-Copy the `.env.example` to `.env` and update with your database URL and other settings:
+Create a local environment file:
+
 ```bash
 cp .env.example .env
 ```
 
-3. Update `.env` with your configuration:
+Configure the required environment variables:
+
 ```env
-# Frontend
+DATABASE_URL=postgresql://user:password@localhost:5432/openfinance
+REDIS_URL=redis://localhost:6379
+
+PORT=3001
+CLIENT_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:3001
 
-# Backend
-CLIENT_URL=http://localhost:3000
-PORT=3001
-
-# Database
-DATABASE_URL=postgresql://user:password@host:port/database?sslmode=require
+BULLMQ_USER=admin
+BULLMQ_PASS=change-me
+SEC_FETCH_CRON=0 */6 * * *
+SEC_USER_AGENT=OpenFinance contact@example.com
+SEC_COOKIE=
 ```
 
-**Note**: The root `.env` file is automatically loaded by Bun and is shared across all apps and packages in the monorepo when running `bun` commands from the root directory.
+### Database Setup
+
+Push the Drizzle schema to PostgreSQL:
+
+```bash
+bun db:push
+```
+
+Open Drizzle Studio when you need to inspect the database:
+
+```bash
+bun db:studio
+```
 
 ### Development
 
-Start both frontend and backend in development mode:
+Start the web dashboard and API server together:
 
 ```bash
 bun dev
 ```
 
-This runs:
-- Frontend: http://localhost:3000
-- Backend: http://localhost:3001
+The local services are available at:
 
-Or run individually:
-```bash
-bun dev:web    # Frontend only
-bun dev:server # Backend only
-```
+- Web dashboard: `http://localhost:3000`
+- API server: `http://localhost:3001`
+- Health check: `http://localhost:3001/health`
+- Queue dashboard: `http://localhost:3001/admin/bull-mq/dashboard`
 
-### Database
-
-Set up the database:
+Start or stop the recurring SEC ingestion schedule:
 
 ```bash
-bun db:push    # Push schema to database
-bun db:migrate # Run migrations
-bun db:studio  # Open Drizzle Studio
+bun --cwd apps/server queue:start
+bun --cwd apps/server queue:stop
 ```
 
-### Building
+### Useful Commands
 
-Build all packages and apps:
 ```bash
-bun build
+bun dev:web          # Start only the Next.js app
+bun dev:server       # Start only the Hono API server
+bun build            # Build shared packages and applications
+bun build:web        # Build the Next.js app
+bun build:server     # Build the Hono server
+bun build:packages   # Build the shared package
+bun db:generate      # Generate Drizzle migrations
+bun db:migrate       # Run Drizzle migrations
 ```
 
-Or build specific targets:
-```bash
-bun build:web
-bun build:server
-bun build:packages
-```
+## Workspace Packages
 
-## 🏗️ Project Structure
+- `@openfinance/web`: Next.js dashboard.
+- `@openfinance/server`: Hono API, tRPC router, SEC ingestion, and BullMQ workers.
+- `@openfinance/shared`: Drizzle database layer, Redis client, validation schemas, shared types, and helpers.
 
-```
-.
-├── apps/
-│   ├── web/                 # Next.js frontend
-│   │   ├── src/
-│   │   │   └── app/        # App router pages
-│   │   ├── next.config.ts
-│   │   ├── tailwind.config.ts
-│   │   └── package.json
-│   └── server/              # Hono backend with tRPC
-│       ├── src/
-│       │   ├── app.ts      # Hono app setup
-│       │   ├── index.ts    # Server entry point
-│       │   ├── controllers/
-│       │   └── routes/
-│       └── package.json
-├── packages/
-│   └── shared/              # Consolidated shared package
-│       ├── src/
-│       │   ├── db/         # Drizzle ORM + PostgreSQL setup
-│       │   │   ├── index.ts
-│       │   │   ├── client.ts
-│       │   │   └── schema/
-│       │   ├── types/      # Shared TypeScript types
-│       │   │   ├── index.ts
-│       │   │   └── types.ts
-│       │   ├── validations/# Zod validation schemas
-│       │   │   ├── index.ts
-│       │   │   └── schemas.ts
-│       │   ├── utils/      # Shared utilities
-│       │   │   ├── index.ts
-│       │   │   └── helpers.ts
-│       │   ├── trpc/       # tRPC router configuration
-│       │   │   └── index.ts
-│       │   └── index.ts    # Main export
-│       ├── drizzle.config.ts
-│       ├── tsconfig.json
-│       └── package.json
-├── package.json             # Root workspace config
-├── tsconfig.json            # Shared TypeScript config
-├── .env.example
-├── .gitignore
-└── README.md
-```
+The web app imports the server's tRPC router type through `@openfinance/server/trpc`, keeping the client API contract type-safe without duplicating schemas.
 
-## 📝 Type Safety
-
-This monorepo enforces strict end-to-end type safety:
-
-- **Database Types**: Automatically inferred from Drizzle schemas
-- **Validation Schemas**: Zod schemas for runtime type checking
-- **Shared Types**: Reusable across frontend and backend
-- **tRPC**: Type-safe API contracts between client and server
-- **TypeScript**: Strict mode enabled globally
-
-Example:
-```typescript
-import { type User } from "@openfinance/types";
-import { createUserSchema } from "@openfinance/schemas";
-import { db } from "@openfinance/db";
-
-// Full type safety from database to API to frontend
-const user = await db.query.users.findFirst();
-const validated = createUserSchema.parse(user);
-```
-
-## 🔗 Workspace Aliases
-
-All packages are aliased under `@openfinance/`:
-
-```typescript
-// Import from main shared package
-import { db } from "@openfinance/shared/db";
-import { type User } from "@openfinance/shared/types";
-import { createUserSchema } from "@openfinance/shared/validations";
-import { formatCurrency } from "@openfinance/shared/utils";
-import { router } from "@openfinance/shared/trpc";
-
-// Or import from sub-exports
-import * from "@openfinance/shared";
-```
-
-## 📦 Adding Dependencies
-
-Add dependencies to the root:
-```bash
-bun add package-name
-```
-
-Add dependencies to a specific workspace:
-```bash
-bun add -w @openfinance/web package-name
-bun add -w @openfinance/server package-name
-bun add -w @openfinance/shared package-name
-```
-
-## 🔗 Inter-package Dependencies
-
-Packages reference each other using workspace protocol:
-
-```json
-{
-  "dependencies": {
-    "@openfinance/shared": "workspace:*"
-  }
-}
-```
-
-## 🌍 Environment Variables
-
-Environment variables are managed at the monorepo root:
-
-- **Root `.env` file**: Automatically loaded by Bun across all apps and packages
-- **Frontend**: Access public variables with `NEXT_PUBLIC_` prefix
-- **Backend**: Access all variables via `process.env` or `Bun.env`
-- **Shared packages**: Access via standard `process.env`
-
-The `.env` file is shared across:
-- `apps/web` via Next.js
-- `apps/server` via Bun runtime
-- `packages/shared` via Node.js process environment
-
-## 📚 Learn More
-
-- [Bun Documentation](https://bun.sh)
-- [Next.js Documentation](https://nextjs.org)
-- [Drizzle ORM](https://orm.drizzle.team)
-- [tRPC](https://trpc.io)
-- [Hono](https://hono.dev)
-- [TailwindCSS](https://tailwindcss.com)
-
-## 📄 License
+## License
 
 MIT

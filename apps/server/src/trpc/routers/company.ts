@@ -5,6 +5,7 @@ import {
   getSECCompanies,
   getSECCompanyFillings,
   getStats,
+  getTopHoldings,
 } from "../../controllers/sec";
 
 export const companyRouter = router({
@@ -29,5 +30,18 @@ export const companyRouter = router({
     )
     .query(async ({ input }) => {
       return getSECCompanyFillings(input.cik);
+    }),
+
+  topHoldings: publicProcedure
+    .input(
+      z.object({
+        limit: z
+          .number({ message: "Provide a valid limit value between 10 and 50" })
+          .min(10, "Minimum allowed value is 10")
+          .max(50, "Max allowed value is 50"),
+      }),
+    )
+    .query(async ({ input }) => {
+      return getTopHoldings(input.limit);
     }),
 });
